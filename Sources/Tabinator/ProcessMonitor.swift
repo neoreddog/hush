@@ -40,6 +40,33 @@ enum ProcessMonitor {
         return (path as NSString).lastPathComponent
     }
 
+    /// Running processes aggregated by executable name with their combined
+    /// CPU usage, sorted busiest-first. Used to populate the picker menu.
+    static func runningProcessesByCPU() -> [(name: String, cpu: Double)] {
+        let ps = Process()
+        ps.executableURL = URL(fileURLWithPath: "/bin/ps")
+        ps.arguments = ["-axco", "%cpu=,comm="]
+        let pipe = Pipe()
+        ps.standardOutput = pipe
+        guard (try? ps.run()) != nil else { return [] }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        ps.waitUntilExit()
+        guard let output = String(data: data, encoding: .utf8) else { return [] }
+
+        var totals: [String: Double] = [:]
+        for line in output.split(separator: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard let space = trimmed.firstIndex(of: " ") else { continue }
+            let cpu = Double(trimmed[..<space]) ?? 0
+            let name = trimmed[trimmed.index(after: space)...].trimmingCharacters(in: .whitespaces)
+            guard !name.isEmpty else { continue }
+            totals[name, default: 0] += cpu
+        }
+        return totals
+            .map { (name: $0.key, cpu: $0.value) }
+            .sorted { $0.cpu == $1.cpu ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending : $0.cpu > $1.cpu }
+    }
+
     /// True if `pid` is alive and still runs a process with the given name.
     static func pid(_ pid: pid_t, isStillNamed name: String) -> Bool {
         guard kill(pid, 0) == 0 || errno == EPERM else { return false }

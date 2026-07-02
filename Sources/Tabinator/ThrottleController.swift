@@ -36,6 +36,13 @@ final class ThrottleController {
         }
     }
 
+    /// Switches to a new target: releases everything attached to the old
+    /// name and immediately scans for the new one.
+    func retarget() {
+        releaseAll()
+        poll()
+    }
+
     /// Detaches every throttler, leaving all processes running.
     func releaseAll() {
         for throttler in throttlers.values {
