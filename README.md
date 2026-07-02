@@ -1,7 +1,9 @@
-# Tabinator
+# Hush
 
-A lightweight macOS menu bar app that watches for **Adobe Crash Processor**
-and caps its CPU usage.
+*A creative person's life saver.*
+
+A lightweight macOS menu bar app that notices when **Adobe Crash Processor**
+starts working overtime in the background and quietly brings it back down.
 
 ## How it works
 
@@ -13,28 +15,40 @@ and caps its CPU usage.
   throttler detaches and sends a final `SIGCONT`, so nothing is ever left
   suspended. The same cleanup runs on quit, `SIGTERM`, and `SIGINT`.
 
-## Menu bar controls
+## The menu
 
-- **Maximum CPU slider** — drag to set the cap (5–95% in 5% steps,
-  default 20%). Applies immediately and persists across restarts.
-- **Start Automatically at Login** — registers via `SMAppService`
-  (requires running from the built `.app` bundle, not the bare binary).
-- **Advanced ▸ Watched Process** — pick a different process to limit,
+- **Status line** — "All quiet." or "Working on it.", set in the brand
+  serif. The menu bar glyph switches from the template idle mark to the
+  full-color settling bars while Hush is actively quieting something.
+- **Allowance slider** — how much of the Mac the watched task is allowed
+  to use (5–95% in 5% steps, default 20%). Applies immediately, persists.
+- **Advanced ▸ Watched Process** — pick a different process to watch,
   from a busiest-first list of running processes or by typing a name.
+- **Advanced ▸ Start Automatically at Login** — registers via
+  `SMAppService` (requires running from `/Applications`, not the bare
+  binary).
 
-The menu bar gauge turns sea-green while a process is actively being
-limited. The poll interval is configurable via defaults:
+The poll interval is configurable via defaults:
 
 ```sh
-defaults write com.tabinator.app pollIntervalSeconds 10
+defaults write com.hush.app pollIntervalSeconds 10
 ```
+
+## Branding
+
+All brand assets and guidelines live in `branding/` — see
+`branding/brand-guidelines.html` for the palette (deep plum family),
+typography (Iowan Old Style display serif), and voice ("explain the
+feeling, never the mechanism"). User-facing copy never says CPU,
+process, throttle, or kill.
 
 ## Build
 
 ```sh
-./scripts/build-app.sh          # → build/Tabinator.app
-cp -R build/Tabinator.app /Applications/
-open /Applications/Tabinator.app
+./scripts/build-app.sh          # → build/Hush.app
+cp -R build/Hush.app /Applications/
+open /Applications/Hush.app
 ```
 
-Requires macOS 13+ and Xcode command line tools.
+Requires macOS 13+ and Xcode command line tools. See RELEASE.md for
+building the distributable DMG.

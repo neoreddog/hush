@@ -1,10 +1,8 @@
 import AppKit
 
-/// The app's accent color — sea green.
-let tabinatorAccent = NSColor(red: 179 / 255, green: 189 / 255, blue: 167 / 255, alpha: 1)
-
-/// A menu-embedded slider for picking the CPU limit, with a live label.
-final class CPULimitSliderView: NSView {
+/// A menu-embedded slider for the allowance — how much of the Mac the
+/// watched background task is allowed to use.
+final class AllowanceSliderView: NSView {
     private let label = NSTextField(labelWithString: "")
     private let slider = NSSlider()
     private let onChange: (Int) -> Void
@@ -22,6 +20,7 @@ final class CPULimitSliderView: NSView {
         slider.isContinuous = true
         slider.target = self
         slider.action = #selector(sliderMoved)
+        toolTip = "How much of your Mac the background task is allowed to use."
 
         for view in [label, slider] {
             view.translatesAutoresizingMaskIntoConstraints = false
@@ -54,6 +53,6 @@ final class CPULimitSliderView: NSView {
     }
 
     private func updateLabel() {
-        label.stringValue = "Maximum CPU: \(slider.integerValue)%"
+        label.stringValue = "Allowance: \(slider.integerValue)%"
     }
 }

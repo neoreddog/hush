@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Tabinator",
+    name: "Hush",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "Tabinator",
-            path: "Sources/Tabinator"
+            name: "Hush",
+            path: "Sources/Hush"
         )
     ]
 )

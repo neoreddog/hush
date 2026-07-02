@@ -1,4 +1,4 @@
-# Releasing Tabinator
+# Releasing Hush
 
 ## TL;DR
 
@@ -10,16 +10,16 @@ git tag v1.1
 # 2. Build the drag-and-drop installer:
 ./scripts/make-dmg.sh
 
-# 3. Ship build/Tabinator-<version>.dmg
+# 3. Ship build/Hush-<version>.dmg
 ```
 
-The DMG opens with `Tabinator.app` next to an `Applications` shortcut —
+The DMG opens with `Hush.app` next to an `Applications` shortcut —
 users install by dragging the app onto it.
 
 ## What the scripts do
 
 - `scripts/build-app.sh` — compiles the Swift package in release mode,
-  assembles `build/Tabinator.app` (binary + `Resources/Info.plist`), and
+  assembles `build/Hush.app` (binary + `Resources/Info.plist`), and
   ad-hoc codesigns it. The `.app` bundle is required for Launch at Login
   (`SMAppService`) to work.
 - `scripts/make-dmg.sh [version]` — runs the build, stages the app with a
@@ -42,7 +42,7 @@ so on another Mac downloaded copies are quarantined and Gatekeeper will
 refuse to open them with a double-click. Recipients must either:
 
 - Right-click the app → **Open** → **Open** (once), or
-- `xattr -dr com.apple.quarantine /Applications/Tabinator.app`
+- `xattr -dr com.apple.quarantine /Applications/Hush.app`
 
 ### Proper signing + notarization (optional)
 
@@ -53,22 +53,22 @@ For frictionless distribution you need a paid Apple Developer account:
 # (edit build-app.sh, or re-sign the built app):
 codesign --force --options runtime \
     --sign "Developer ID Application: Your Name (TEAMID)" \
-    build/Tabinator.app
+    build/Hush.app
 
 ./scripts/make-dmg.sh
 
 # Notarize the DMG (one-time: xcrun notarytool store-credentials)
-xcrun notarytool submit build/Tabinator-<version>.dmg \
+xcrun notarytool submit build/Hush-<version>.dmg \
     --keychain-profile "notary" --wait
-xcrun stapler staple build/Tabinator-<version>.dmg
+xcrun stapler staple build/Hush-<version>.dmg
 ```
 
 ## Publishing on GitHub (optional)
 
 ```sh
 git push --tags
-gh release create v1.1 build/Tabinator-1.1.dmg \
-    --title "Tabinator 1.1" --notes "…"
+gh release create v1.1 build/Hush-1.1.dmg \
+    --title "Hush 1.1" --notes "…"
 ```
 
 ## Sanity checklist before shipping

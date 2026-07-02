@@ -3,7 +3,7 @@ import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var sliderView: CPULimitSliderView!
+    private var sliderView: AllowanceSliderView!
     private let controller = ThrottleController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -30,9 +30,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         status.isEnabled = false
         status.tag = MenuTag.status
         menu.addItem(status)
+
+        let sub = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+        sub.isEnabled = false
+        sub.tag = MenuTag.statusSub
+        menu.addItem(sub)
         menu.addItem(.separator())
 
-        sliderView = CPULimitSliderView { [weak self] percent in
+        sliderView = AllowanceSliderView { [weak self] percent in
             Settings.cpuLimitPercent = percent
             self?.controller.limitChanged()
             self?.refreshMenu()
@@ -42,6 +47,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(sliderItem)
         menu.addItem(.separator())
 
+        // Advanced ▸ Watched Process / Start at Login
+        let advancedItem = NSMenuItem(title: "Advanced", action: nil, keyEquivalent: "")
+        let advancedMenu = NSMenu()
+
+        let targetItem = NSMenuItem(title: "Watched Process", action: nil, keyEquivalent: "")
+        let targetMenu = NSMenu()
+        targetMenu.delegate = self
+        targetItem.submenu = targetMenu
+        advancedMenu.addItem(targetItem)
+
         let login = NSMenuItem(
             title: "Start Automatically at Login",
             action: #selector(toggleLaunchAtLogin(_:)),
@@ -49,22 +64,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
-        login.tag = MenuTag.login
-        menu.addItem(login)
+        advancedMenu.addItem(login)
 
-        // Advanced ▸ Watched Process ▸ (running-process picker)
-        let advancedItem = NSMenuItem(title: "Advanced", action: nil, keyEquivalent: "")
-        let advancedMenu = NSMenu()
-        let targetItem = NSMenuItem(title: "Watched Process", action: nil, keyEquivalent: "")
-        let targetMenu = NSMenu()
-        targetMenu.delegate = self
-        targetItem.submenu = targetMenu
-        advancedMenu.addItem(targetItem)
         advancedItem.submenu = advancedMenu
         menu.addItem(advancedItem)
 
-        menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit Tabinator", action: #selector(quit), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "Quit Hush", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
 
@@ -73,36 +78,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private enum MenuTag {
         static let status = 1
-        static let login = 3
+        static let statusSub = 2
     }
 
-    private func statusText() -> String {
-        let name = Settings.targetProcessName
+    /// Status copy speaks in outcomes, never mechanisms — no CPU, no
+    /// processes, nothing alarmed.
+    private var statusCopy: (headline: String, sub: String) {
         if controller.throttlers.isEmpty {
-            return "\(name) is not running"
+            return ("All quiet.", "Nothing running hot right now.")
         }
-        return "Limiting \(name) to \(Settings.cpuLimitPercent)% CPU"
+        return ("Working on it.", "Something was working overtime. Hush is keeping it settled.")
     }
 
     private func refreshMenu() {
-        statusItem.menu?.item(withTag: MenuTag.status)?.title = statusText()
-        sliderView.refresh()
-        updateIcon()
-    }
+        guard let menu = statusItem.menu else { return }
+        let copy = statusCopy
 
-    /// Template (auto light/dark) gauge when idle; sea-green when limiting.
-    private func updateIcon() {
+        menu.item(withTag: MenuTag.status)?.attributedTitle = NSAttributedString(
+            string: copy.headline,
+            attributes: [.font: Brand.display(ofSize: 19), .foregroundColor: NSColor.labelColor]
+        )
+        menu.item(withTag: MenuTag.statusSub)?.attributedTitle = NSAttributedString(
+            string: copy.sub,
+            attributes: [
+                .font: NSFont.menuFont(ofSize: NSFont.systemFontSize(for: .small)),
+                .foregroundColor: NSColor.secondaryLabelColor,
+            ]
+        )
+
+        sliderView.refresh()
+
         let active = !controller.throttlers.isEmpty
-        let symbol = active ? "gauge.with.dots.needle.33percent" : "gauge.with.dots.needle.67percent"
-        var image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Tabinator")
-        if active {
-            image = image?.withSymbolConfiguration(.init(paletteColors: [tabinatorAccent]))
-            image?.isTemplate = false
-        } else {
-            image?.isTemplate = true
-        }
-        statusItem.button?.image = image
-        statusItem.button?.toolTip = statusText()
+        statusItem.button?.image = active ? Brand.menuBarActive : Brand.menuBarIdle
+        statusItem.button?.toolTip = "Hush — \(copy.headline)"
     }
 
     // MARK: - Actions
@@ -146,8 +154,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Could not update Start at Login"
-            alert.informativeText = "\(error.localizedDescription)\n\nNote: this only works when Tabinator is run from the Applications folder."
+            alert.messageText = "Hush couldn't set itself to start at login."
+            alert.informativeText = "\(error.localizedDescription)\n\nThis works once Hush is in the Applications folder."
             alert.runModal()
         }
         sender.state = service.status == .enabled ? .on : .off

@@ -1,0 +1,644 @@
+<title>Hush — Brand Guidelines</title>
+<style>
+  :root{
+    --ink:   #1C0F17;
+    --plum:  #5B2A48;
+    --glow:  #B06A8C;
+    --mist:  #F6EFF2;
+    --quiet: #8C7A85;
+    --hair: rgba(28,15,23,0.10);
+    --display: "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Palatino, Georgia, serif;
+    --body: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--mist);
+    color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{max-width:100%;}
+  .wrap{max-width:840px;margin:0 auto;padding:0 32px;}
+  .wrap-wide{max-width:1000px;margin:0 auto;padding:0 32px;}
+
+  /* ---------- Cover ---------- */
+  .cover{
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(176,106,140,0.22), transparent 60%),
+      var(--ink);
+    color:var(--mist);
+    padding:96px 32px 88px;
+    text-align:center;
+  }
+  .kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--glow);
+    margin:0 0 28px;
+  }
+  .wordmark{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(64px,11vw,120px);
+    letter-spacing:-0.01em;
+    margin:0;
+    line-height:0.95;
+    text-wrap:balance;
+  }
+  .tagline{
+    font-family:var(--display);
+    font-style:italic;
+    font-size:clamp(18px,2.4vw,24px);
+    color:rgba(246,239,242,0.82);
+    margin:22px 0 0;
+  }
+
+  /* equalizer / hush motif */
+  .eq{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:5px;
+    height:64px;
+    margin:52px auto 0;
+    max-width:420px;
+  }
+  .eq span{
+    display:block;
+    width:5px;
+    border-radius:3px;
+    background:linear-gradient(180deg,var(--glow), var(--plum));
+    animation:hush 4.8s ease-in-out infinite;
+  }
+  @keyframes hush{
+    0%{height:var(--h1);}
+    38%{height:var(--h1);}
+    58%{height:10px;}
+    100%{height:10px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .eq span{animation:none;height:10px;}
+  }
+
+  section{padding:72px 0;border-bottom:1px solid var(--hair);}
+  section:last-of-type{border-bottom:none;}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--plum);
+    margin:0 0 14px;
+  }
+  h2{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:38px;
+    margin:0 0 20px;
+    text-wrap:balance;
+  }
+  h3{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:22px;
+    margin:0 0 10px;
+  }
+  p{
+    font-size:17px;
+    line-height:1.65;
+    color:#332028;
+    max-width:65ch;
+    margin:0 0 16px;
+  }
+  .lede{
+    font-size:20px;
+    line-height:1.6;
+    color:var(--ink);
+    max-width:60ch;
+  }
+
+  /* ---------- Rationale ---------- */
+  .rationale-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+  }
+  .rationale-grid .col p:last-child{margin-bottom:0;}
+
+  /* ---------- Logo ---------- */
+  .mark-row{
+    display:flex;
+    gap:20px;
+    margin:32px 0 40px;
+    flex-wrap:wrap;
+  }
+  .mark-card{
+    flex:1 1 220px;
+    background:var(--ink);
+    border-radius:14px;
+    padding:36px 24px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .mark-card.on-mist{
+    background:#fff;
+    border:1px solid var(--hair);
+  }
+  .glyph{
+    width:56px;
+    height:56px;
+  }
+  .mark-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--quiet);
+  }
+  .mark-card.on-mist .mark-label{color:var(--plum);}
+
+  .clearspace{
+    border:1px dashed var(--quiet);
+    border-radius:10px;
+    padding:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    margin:28px 0;
+  }
+  .clearspace .wordmark-sm{
+    font-family:var(--display);
+    font-size:34px;
+    color:var(--ink);
+  }
+
+  .dodont{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    margin-top:28px;
+  }
+  .dodont .card{
+    border-radius:12px;
+    padding:24px;
+  }
+  .dodont .yes{background:rgba(91,42,72,0.06);border:1px solid rgba(91,42,72,0.18);}
+  .dodont .no{background:rgba(140,122,133,0.08);border:1px solid var(--hair);}
+  .dodont .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    display:block;
+  }
+  .dodont .yes .tag{color:var(--plum);}
+  .dodont .no .tag{color:var(--quiet);}
+  .dodont .wordmark-demo{
+    font-family:var(--display);
+    font-size:26px;
+  }
+
+  /* ---------- Color ---------- */
+  .swatches{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:0;
+    border-radius:14px;
+    overflow:hidden;
+    margin:32px 0 8px;
+  }
+  .swatch{
+    height:150px;
+    display:flex;
+    align-items:flex-end;
+    padding:14px;
+  }
+  .swatch .name{
+    font-family:var(--body);
+    font-weight:600;
+    font-size:13px;
+  }
+  .swatch-meta{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:0;
+    margin-bottom:36px;
+  }
+  .swatch-meta div{padding:10px 14px 0;}
+  .swatch-meta .hex{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink);
+  }
+  .swatch-meta .use{
+    font-size:12px;
+    color:var(--quiet);
+    line-height:1.4;
+    margin-top:4px;
+  }
+
+  /* ---------- Type ---------- */
+  .specimen{margin-bottom:36px;}
+  .specimen .role{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--quiet);
+    margin-bottom:8px;
+  }
+  .specimen .sample-display{
+    font-family:var(--display);
+    font-size:44px;
+    line-height:1.1;
+  }
+  .specimen .sample-body{
+    font-family:var(--body);
+    font-size:19px;
+    line-height:1.5;
+    max-width:60ch;
+  }
+  .specimen .sample-mono{
+    font-family:var(--mono);
+    font-size:15px;
+    background:#fff;
+    border:1px solid var(--hair);
+    border-radius:8px;
+    padding:14px 16px;
+    display:inline-block;
+  }
+  .scale{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:28px;
+  }
+  .scale-row{
+    display:flex;
+    align-items:baseline;
+    gap:18px;
+    border-top:1px solid var(--hair);
+    padding-top:10px;
+  }
+  .scale-row .px{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--quiet);
+    width:56px;
+    flex:none;
+  }
+  .scale-row .txt{font-family:var(--display);}
+
+  /* ---------- Voice ---------- */
+  .voice-principles{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+    margin:32px 0 44px;
+  }
+  .principle{
+    background:#fff;
+    border:1px solid var(--hair);
+    border-radius:12px;
+    padding:22px;
+  }
+  .principle .num{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--glow);
+    display:block;
+    margin-bottom:10px;
+  }
+  .principle p{font-size:14px;margin:0;color:#4a3a41;}
+
+  .copy-example{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    margin-bottom:16px;
+  }
+  .bubble{
+    border-radius:12px;
+    padding:20px 22px;
+    font-size:15px;
+    line-height:1.55;
+  }
+  .bubble.avoid{
+    background:rgba(140,122,133,0.08);
+    color:var(--quiet);
+    text-decoration:line-through;
+    text-decoration-color:rgba(140,122,133,0.5);
+  }
+  .bubble.use{
+    background:var(--ink);
+    color:var(--mist);
+  }
+  .bubble .lbl{
+    display:block;
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+    text-decoration:none;
+  }
+  .bubble.avoid .lbl{color:var(--quiet);}
+  .bubble.use .lbl{color:var(--glow);}
+
+  /* ---------- UI application ---------- */
+  .menubar-mock{
+    background:var(--ink);
+    border-radius:16px;
+    padding:20px;
+    margin:32px 0;
+    max-width:320px;
+  }
+  .menubar-strip{
+    background:rgba(255,255,255,0.06);
+    border-radius:8px;
+    padding:6px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .menubar-strip .status-glyph{width:16px;height:16px;}
+  .menubar-strip .time{
+    font-family:var(--body);
+    font-size:11px;
+    color:rgba(246,239,242,0.7);
+  }
+  .dropdown{
+    background:#2A1723;
+    border-radius:10px;
+    padding:18px;
+    color:var(--mist);
+  }
+  .dropdown .status{
+    font-family:var(--display);
+    font-size:19px;
+    margin-bottom:4px;
+  }
+  .dropdown .sub{
+    font-family:var(--body);
+    font-size:12.5px;
+    color:rgba(246,239,242,0.6);
+    margin-bottom:16px;
+  }
+  .dropdown .row{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--body);
+    font-size:12.5px;
+    padding:8px 0;
+    border-top:1px solid rgba(246,239,242,0.1);
+    color:rgba(246,239,242,0.85);
+  }
+
+  footer{
+    padding:48px 32px 64px;
+    text-align:center;
+  }
+  footer p{
+    margin:0 auto;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--quiet);
+  }
+
+  @media (max-width:680px){
+    .rationale-grid,.dodont,.copy-example{grid-template-columns:1fr;}
+    .voice-principles{grid-template-columns:1fr;}
+    .swatches,.swatch-meta{grid-template-columns:repeat(2,1fr);}
+    .swatch{height:120px;}
+  }
+</style>
+
+<div class="cover">
+  <p class="kicker">Brand Guidelines &nbsp;·&nbsp; v1</p>
+  <h1 class="wordmark">Hush</h1>
+  <p class="tagline">A creative person's life saver.</p>
+  <div class="eq" aria-hidden="true">
+    <span style="--h1:22px; animation-delay:0.0s"></span>
+    <span style="--h1:40px; animation-delay:0.05s"></span>
+    <span style="--h1:16px; animation-delay:0.1s"></span>
+    <span style="--h1:52px; animation-delay:0.15s"></span>
+    <span style="--h1:30px; animation-delay:0.2s"></span>
+    <span style="--h1:60px; animation-delay:0.25s"></span>
+    <span style="--h1:24px; animation-delay:0.3s"></span>
+    <span style="--h1:44px; animation-delay:0.35s"></span>
+    <span style="--h1:18px; animation-delay:0.4s"></span>
+    <span style="--h1:56px; animation-delay:0.45s"></span>
+    <span style="--h1:28px; animation-delay:0.5s"></span>
+    <span style="--h1:38px; animation-delay:0.55s"></span>
+    <span style="--h1:20px; animation-delay:0.6s"></span>
+    <span style="--h1:48px; animation-delay:0.65s"></span>
+    <span style="--h1:32px; animation-delay:0.7s"></span>
+    <span style="--h1:58px; animation-delay:0.75s"></span>
+    <span style="--h1:14px; animation-delay:0.8s"></span>
+    <span style="--h1:42px; animation-delay:0.85s"></span>
+    <span style="--h1:26px; animation-delay:0.9s"></span>
+    <span style="--h1:50px; animation-delay:0.95s"></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <p class="eyebrow">Why Hush exists</p>
+    <h2>Your Mac shouldn't sound like it's taking off.</h2>
+    <div class="rationale-grid">
+      <div class="col">
+        <p class="lede">Somewhere in the background, a badly-behaved Adobe helper process is quietly redlining a CPU core — spinning fans, draining battery, heating a lap — while the person at the keyboard has no idea why, and no interest in finding out.</p>
+      </div>
+      <div class="col">
+        <p>Hush isn't a system monitor. It doesn't teach anyone what a process is, and it never will. It finds the one thing making noise in the background and turns it down, automatically, so the work stays quiet.</p>
+        <p>Every choice in this identity should protect that feeling: competence without technicality. A hand quietly closing a door, not a dashboard of dials.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Logo &amp; mark</p>
+    <h2>The wordmark is the logo.</h2>
+    <p>Hush has no separate pictorial icon in running text or on the website — the wordmark, set in the display serif at generous size, carries the whole identity. Lowercase in body contexts, sentence case as a name (<em>Hush</em>), never all-caps, never a logotype lockup with a tagline glued underneath.</p>
+
+    <div class="mark-row">
+      <div class="mark-card">
+        <span class="wordmark-sm" style="font-family:var(--display);font-size:34px;color:var(--mist);">Hush</span>
+        <span class="mark-label">On ink</span>
+      </div>
+      <div class="mark-card on-mist">
+        <span class="wordmark-sm">Hush</span>
+        <span class="mark-label">On mist</span>
+      </div>
+      <div class="mark-card" style="background:var(--plum);">
+        <span class="wordmark-sm" style="color:var(--mist);">Hush</span>
+        <span class="mark-label" style="color:rgba(246,239,242,0.75);">On plum</span>
+      </div>
+    </div>
+
+    <h3>App icon &amp; menu bar glyph</h3>
+    <p>The menu bar glyph is the equalizer motif from the cover, reduced to five bars settling to one height — the same visual idea as the wordform, at utility scale. It should read instantly as "settling down," not as an audio app.</p>
+
+    <div class="clearspace">
+      <svg class="glyph" viewBox="0 0 56 56" aria-hidden="true">
+        <rect x="6" y="20" width="6" height="16" rx="3" fill="#5B2A48"/>
+        <rect x="17" y="12" width="6" height="24" rx="3" fill="#B06A8C"/>
+        <rect x="28" y="22" width="6" height="14" rx="3" fill="#5B2A48"/>
+        <rect x="39" y="16" width="6" height="20" rx="3" fill="#B06A8C"/>
+        <rect x="50" y="24" width="6" height="0" rx="3" fill="#5B2A48"/>
+      </svg>
+    </div>
+    <p style="font-size:14px;color:var(--quiet);margin-top:-14px;">Minimum clear space: the full height of the wordmark's cap-height on all sides. Minimum digital size: 16px (menu bar), below which use the flat single-bar reduction.</p>
+
+    <div class="dodont">
+      <div class="card yes">
+        <span class="tag">Do</span>
+        <span class="wordmark-demo">Hush</span>
+        <p style="font-size:13px;color:var(--quiet);margin:10px 0 0;">Set in the display serif, generous letterspacing at large sizes, plenty of surrounding quiet.</p>
+      </div>
+      <div class="card no">
+        <span class="tag">Don't</span>
+        <span class="wordmark-demo" style="font-family:var(--body);font-weight:800;text-transform:uppercase;letter-spacing:0.04em;">HUSH</span>
+        <p style="font-size:13px;color:var(--quiet);margin:10px 0 0;">Never bold sans caps — it reads as an alert, the opposite of the brand.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Color</p>
+    <h2>Dark plum, kept quiet.</h2>
+    <p>One deep plum family, used the way a good tailor uses black — as depth, not decoration. The palette stays almost monochrome on purpose: no traffic-light red/green anywhere in the product, because Hush never wants to look alarmed.</p>
+
+    <div class="swatches">
+      <div class="swatch" style="background:#1C0F17;"><span class="name" style="color:#F6EFF2;">Ink Plum</span></div>
+      <div class="swatch" style="background:#5B2A48;"><span class="name" style="color:#F6EFF2;">Hush Plum</span></div>
+      <div class="swatch" style="background:#B06A8C;"><span class="name" style="color:#1C0F17;">Glow</span></div>
+      <div class="swatch" style="background:#8C7A85;"><span class="name" style="color:#F6EFF2;">Quiet Grey</span></div>
+      <div class="swatch" style="background:#F6EFF2;border:1px solid var(--hair);"><span class="name" style="color:#1C0F17;">Mist</span></div>
+    </div>
+    <div class="swatch-meta">
+      <div><span class="hex">#1C0F17</span><p class="use">Primary ground. App chrome, cover moments, menu bar dropdown.</p></div>
+      <div><span class="hex">#5B2A48</span><p class="use">Core brand color. Wordmark on light, primary buttons, icon bars.</p></div>
+      <div><span class="hex">#B06A8C</span><p class="use">Accent only. Hover states, the settling bar, one highlight per screen.</p></div>
+      <div><span class="hex">#8C7A85</span><p class="use">Secondary text, captions, disabled states. Never body copy.</p></div>
+      <div><span class="hex">#F6EFF2</span><p class="use">Paper. Default light background for docs, marketing, settings.</p></div>
+    </div>
+    <p style="font-size:14px;color:var(--quiet);">No greens, no reds, no yellows. If a state needs distinguishing, do it with the wordmark's own tones and with words, not stoplight color — "All quiet" reads calmer than a green dot ever will.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Typography</p>
+    <h2>A quiet serif that still has weight in the room.</h2>
+
+    <div class="specimen">
+      <p class="role">Display — Iowan Old Style</p>
+      <p class="sample-display">Working quietly again</p>
+      <p style="font-size:13px;color:var(--quiet);margin-top:6px;">Wordmark, headlines, the dropdown status line. Stack: <code style="font-family:var(--mono);">"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif</code>. Set loose, never bold — italics carry emphasis instead.</p>
+    </div>
+
+    <div class="specimen">
+      <p class="role">Body — System sans</p>
+      <p class="sample-body">Hush found a background task using more than its share and brought it back down. You shouldn't notice anything except that the fan stopped.</p>
+      <p style="font-size:13px;color:var(--quiet);margin-top:6px;">Everything a person reads and acts on: settings, onboarding, notifications. Stack: <code style="font-family:var(--mono);">-apple-system, "Avenir Next", "Segoe UI", sans-serif</code>.</p>
+    </div>
+
+    <div class="specimen">
+      <p class="role">Mono — utility only</p>
+      <span class="sample-mono">3 processes hushed today</span>
+      <p style="font-size:13px;color:var(--quiet);margin-top:10px;">Reserved for numbers, hex values, and this document. It should never appear in anything a non-technical person reads in the app itself.</p>
+    </div>
+
+    <div class="scale">
+      <div class="scale-row"><span class="px">64px</span><span class="txt" style="font-size:44px;">Hush</span></div>
+      <div class="scale-row"><span class="px">32px</span><span class="txt" style="font-size:32px;">Section heading</span></div>
+      <div class="scale-row"><span class="px">22px</span><span class="txt" style="font-size:22px;">Card title</span></div>
+      <div class="scale-row"><span class="px">17px</span><span class="txt" style="font-family:var(--body);font-size:17px;">Body copy sits here, at 17px with 1.65 line height.</span></div>
+      <div class="scale-row"><span class="px">13px</span><span class="txt" style="font-family:var(--body);font-size:13px;color:var(--quiet);">Captions and secondary labels.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Voice &amp; tone</p>
+    <h2>Explain the feeling, never the mechanism.</h2>
+    <p>The person using Hush does not know what a CPU is and does not want to learn. Every sentence should sound like a considerate housemate, not a systems engineer.</p>
+
+    <div class="voice-principles">
+      <div class="principle">
+        <span class="num">01</span>
+        <p><strong>No jargon, ever.</strong> Banned words: CPU, process, throttle, thread, utilization, kill. Say "background task," "quieted down," "working overtime."</p>
+      </div>
+      <div class="principle">
+        <span class="num">02</span>
+        <p><strong>Calm, not alarmed.</strong> Nothing is ever "critical" or "detected." A fan spinning up is described the way you'd reassure a friend, not flag an incident.</p>
+      </div>
+      <div class="principle">
+        <span class="num">03</span>
+        <p><strong>Short and warm.</strong> One idea per sentence. Prefer a period to an exclamation point — confidence doesn't need volume.</p>
+      </div>
+    </div>
+
+    <div class="copy-example">
+      <div class="bubble avoid">
+        <span class="lbl">Avoid</span>
+        Detected high CPU utilization (94%) from AdobeCrashProcessor.app. Throttling process to 20% priority.
+      </div>
+      <div class="bubble use">
+        <span class="lbl">Use</span>
+        Your Mac was working overtime in the background. We've quieted it down.
+      </div>
+    </div>
+    <div class="copy-example">
+      <div class="bubble avoid">
+        <span class="lbl">Avoid</span>
+        3 processes throttled. CPU load reduced from 380% to 60%.
+      </div>
+      <div class="bubble use">
+        <span class="lbl">Use</span>
+        Hushed 3 loud processes today. Your fans should thank you.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">In the product</p>
+    <h2>The menu bar is the whole interface.</h2>
+    <p>Most people will only ever see Hush as a single glyph in the menu bar and the small dropdown beneath it. That surface carries the entire brand — it has to feel finished at 16px, not just at poster size.</p>
+
+    <div class="menubar-mock">
+      <div class="menubar-strip">
+        <svg class="status-glyph" viewBox="0 0 56 56" aria-hidden="true">
+          <rect x="6" y="24" width="6" height="8" rx="3" fill="#B06A8C"/>
+          <rect x="17" y="24" width="6" height="8" rx="3" fill="#B06A8C"/>
+          <rect x="28" y="24" width="6" height="8" rx="3" fill="#B06A8C"/>
+        </svg>
+        <span class="time">Tue 2:41 PM</span>
+      </div>
+      <div class="dropdown">
+        <div class="status">All quiet.</div>
+        <div class="sub">Nothing running hot right now.</div>
+        <div class="row"><span>Hushed today</span><span>3</span></div>
+        <div class="row"><span>Last hushed</span><span>11 min ago</span></div>
+      </div>
+    </div>
+    <p style="font-size:14px;color:var(--quiet);">The status line always speaks in outcomes ("All quiet," "Working on it") — never in the metric that produced it.</p>
+  </section>
+
+</div>
+
+<footer>
+  <p>Hush — Brand Guidelines v1</p>
+</footer>
