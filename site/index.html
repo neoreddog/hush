@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hush — a creative person's life saver</title>
+    <meta
+      name="description"
+      content="Hush is a free Mac menu bar app that finds the one thing making noise in the background and turns it down, so your work stays quiet."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1NiA1NiI+CiAgPHJlY3QgeD0iNiIgIHk9IjIwIiB3aWR0aD0iNiIgaGVpZ2h0PSIxNiIgcng9IjMiIGZpbGw9IiM1QjJBNDgiLz4KICA8cmVjdCB4PSIxNyIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjI0IiByeD0iMyIgZmlsbD0iI0IwNkE4QyIvPgogIDxyZWN0IHg9IjI4IiB5PSIyMiIgd2lkdGg9IjYiIGhlaWdodD0iMTQiIHJ4PSIzIiBmaWxsPSIjNUIyQTQ4Ii8+CiAgPHJlY3QgeD0iMzkiIHk9IjE2IiB3aWR0aD0iNiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNCMDZBOEMiLz4KICA8cmVjdCB4PSI1MCIgeT0iMjQiIHdpZHRoPSI2IiBoZWlnaHQ9IjgiICByeD0iMyIgZmlsbD0iIzVCMkE0OCIvPgo8L3N2Zz4K"
+    />
+    <meta property="og:title" content="Hush" />
+    <meta property="og:description" content="Your Mac shouldn't sound like it's taking off." />
+    <style>
+      /* Hush marketing site — palette, type, and motion per branding/brand-guidelines.html */
+      :root {
+        --ink: #1c0f17;
+        --plum: #5b2a48;
+        --glow: #b06a8c;
+        --quiet: #8c7a85;
+        --mist: #f6eff2;
+        --ink-2: #2a1723; /* ink, lifted one layer — dropdown fill */
+        --ink-3: #332028; /* ink, softened for long-form body copy */
+        --hair: rgba(28, 15, 23, 0.1);
+        --display: "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Palatino, Georgia, serif;
+        --body: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+        /* One shared surface for the whole page — sections no longer carry
+           their own background. The theme switcher just repoints these. */
+        --surface: var(--ink);
+        --on-surface: var(--mist);
+        --on-surface-muted: rgba(246, 239, 242, 0.78);
+        --on-surface-soft: rgba(246, 239, 242, 0.55);
+        --accent: var(--glow);
+      }
+
+      body:has(#theme-mist:checked) {
+        --surface: var(--mist);
+        --on-surface: var(--ink);
+        --on-surface-muted: var(--ink-3);
+        --on-surface-soft: rgba(28, 15, 23, 0.55);
+        --accent: var(--plum);
+      }
+
+      body:has(#theme-plum:checked) {
+        --surface: var(--plum);
+        --on-surface: var(--mist);
+        --on-surface-muted: rgba(246, 239, 242, 0.82);
+        --on-surface-soft: rgba(246, 239, 242, 0.6);
+        --accent: var(--glow);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* One continuous canvas: a handful of soft glow blooms, positioned
+         proportionally down the whole page, over a single surface color
+         that the theme switcher repoints. No section carries its own
+         background — the color just flows. */
+      body {
+        margin: 0;
+        background:
+          radial-gradient(55% 30% at 50% 2%, rgba(176, 106, 140, 0.26), transparent 60%),
+          radial-gradient(48% 26% at 10% 24%, rgba(176, 106, 140, 0.16), transparent 62%),
+          radial-gradient(42% 24% at 92% 44%, rgba(176, 106, 140, 0.14), transparent 60%),
+          radial-gradient(55% 30% at 50% 66%, rgba(176, 106, 140, 0.22), transparent 62%),
+          radial-gradient(40% 22% at 15% 92%, rgba(176, 106, 140, 0.12), transparent 60%),
+          var(--surface);
+        color: var(--on-surface);
+        font-family: var(--body);
+        -webkit-font-smoothing: antialiased;
+        transition: background-color 0.4s ease, color 0.4s ease;
+      }
+
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+
+      h2 {
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: clamp(30px, 4.5vw, 38px);
+        margin: 0 0 20px;
+        text-wrap: balance;
+        color: var(--on-surface);
+        transition: color 0.4s ease;
+      }
+
+      h3 {
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: 22px;
+        margin: 0 0 8px;
+        color: var(--on-surface);
+        transition: color 0.4s ease;
+      }
+
+      p {
+        font-size: 17px;
+        line-height: 1.65;
+        color: var(--on-surface-muted);
+        max-width: 65ch;
+        margin: 0 0 16px;
+        transition: color 0.4s ease;
+      }
+
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 14px;
+        transition: color 0.4s ease;
+      }
+
+      .lede {
+        font-size: 20px;
+        line-height: 1.6;
+        color: var(--on-surface);
+        max-width: 60ch;
+        transition: color 0.4s ease;
+      }
+
+      /* ---------- Buttons ---------- */
+      .button {
+        display: inline-block;
+        font-family: var(--body);
+        font-size: 16px;
+        padding: 12px 28px;
+        border: none;
+        border-radius: 999px;
+        background: var(--plum);
+        color: var(--mist);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.25s ease;
+      }
+
+      .button:hover {
+        background: var(--glow);
+        color: var(--ink);
+      }
+
+      .button:focus-visible {
+        outline: 2px solid var(--glow);
+        outline-offset: 3px;
+      }
+
+      .button.on-plum {
+        background: var(--mist);
+        color: var(--plum);
+      }
+
+      .button.on-plum:hover {
+        background: var(--glow);
+        color: var(--ink);
+      }
+
+      /* Mist theme: a mist-colored button on a mist canvas would vanish,
+         so it flips to a filled plum pill. */
+      body:has(#theme-mist:checked) .button.on-plum {
+        background: var(--plum);
+        color: var(--mist);
+      }
+
+      body:has(#theme-mist:checked) .button.on-plum:hover {
+        background: var(--glow);
+        color: var(--ink);
+      }
+
+      /* ---------- Hero ---------- */
+      .hero {
+        position: relative;
+        padding: 96px 32px 88px;
+        text-align: center;
+      }
+
+      /* Theme switcher: three radios drive the whole page via :has(), no JS. */
+      .theme-radio {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .hero-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        max-width: 920px;
+        margin: 0 auto 28px;
+      }
+
+      .hero-top .kicker {
+        margin: 0;
+      }
+
+      .theme-switch {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        position: absolute;
+        right: 24px;
+        transition: background 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .theme-switch {
+        background: rgba(28, 15, 23, 0.06);
+      }
+
+      .theme-switch label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        color: var(--on-surface-soft);
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+
+      .theme-switch label:hover {
+        color: var(--on-surface);
+      }
+
+      body:has(#theme-ink:checked) .theme-switch label[for="theme-ink"],
+      body:has(#theme-mist:checked) .theme-switch label[for="theme-mist"],
+      body:has(#theme-plum:checked) .theme-switch label[for="theme-plum"] {
+        background: var(--glow);
+        color: var(--ink);
+      }
+
+      body:has(#theme-ink:focus-visible) .theme-switch label[for="theme-ink"],
+      body:has(#theme-mist:focus-visible) .theme-switch label[for="theme-mist"],
+      body:has(#theme-plum:focus-visible) .theme-switch label[for="theme-plum"] {
+        outline: 2px solid var(--glow);
+        outline-offset: 2px;
+      }
+
+      .kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 28px;
+        transition: color 0.4s ease;
+      }
+
+      .wordmark {
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: clamp(64px, 11vw, 120px);
+        letter-spacing: -0.01em;
+        margin: 0;
+        line-height: 0.95;
+      }
+
+      .tagline {
+        font-family: var(--display);
+        font-style: italic;
+        font-size: clamp(18px, 2.4vw, 24px);
+        color: var(--on-surface-muted);
+        margin: 22px auto 0;
+        max-width: none;
+      }
+
+      /* The demo: restless bars, settled by CSS alone once reduced motion is off. */
+      .demo {
+        margin-top: 56px;
+      }
+
+      .eq {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 5px;
+        height: 64px;
+        margin: 0 auto;
+        max-width: 420px;
+      }
+
+      .eq span {
+        display: block;
+        width: 5px;
+        height: var(--h);
+        border-radius: 3px;
+        background: linear-gradient(180deg, var(--glow), var(--plum));
+        animation: restless 1.1s ease-in-out var(--d) infinite alternate;
+      }
+
+      @keyframes restless {
+        from {
+          height: var(--h);
+        }
+        to {
+          height: 12px;
+        }
+      }
+
+      .demo-status {
+        font-family: var(--display);
+        font-size: clamp(18px, 2.6vw, 23px);
+        color: var(--on-surface-muted);
+        margin: 30px auto 26px;
+        max-width: none;
+      }
+
+      .story-close {
+        font-family: var(--display);
+        font-style: italic;
+        font-size: 19px;
+        color: var(--accent);
+      }
+
+      /* ---------- Sections ---------- */
+      section {
+        padding: 88px 0;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+      }
+
+      .two-col > div p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ---------- Product / menu bar mock ---------- */
+      .points p {
+        color: var(--on-surface-muted);
+      }
+
+      .menubar-mock {
+        max-width: 340px;
+      }
+
+      .menubar-strip {
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 14px;
+        transition: background 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .menubar-strip {
+        background: rgba(28, 15, 23, 0.06);
+      }
+
+      .menubar-strip .status-glyph {
+        width: 26px;
+        height: 16px;
+      }
+
+      .menubar-strip .time {
+        font-size: 11px;
+        color: rgba(246, 239, 242, 0.7);
+        transition: color 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .menubar-strip .time {
+        color: rgba(28, 15, 23, 0.6);
+      }
+
+      /* The mock dropdown always mirrors the app's own per-theme wash,
+         which stays dark/light on its own terms regardless of the page
+         canvas — it's a floating panel, not part of the page flow. */
+      .dropdown {
+        background: var(--ink-2);
+        border-radius: 10px;
+        padding: 18px;
+        color: var(--mist);
+        transition: background 0.4s ease, color 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .dropdown {
+        background: rgba(246, 239, 242, 0.92);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px var(--hair);
+      }
+
+      body:has(#theme-plum:checked) .dropdown {
+        background: rgba(91, 42, 72, 0.92);
+      }
+
+      .dropdown .status {
+        font-family: var(--display);
+        font-size: 19px;
+        margin-bottom: 4px;
+      }
+
+      .dropdown .sub {
+        font-size: 12.5px;
+        color: rgba(246, 239, 242, 0.6);
+        margin-bottom: 16px;
+        transition: color 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .dropdown .sub {
+        color: rgba(28, 15, 23, 0.6);
+      }
+
+      .dropdown .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12.5px;
+        padding: 8px 0;
+        border-top: 1px solid rgba(246, 239, 242, 0.1);
+        color: rgba(246, 239, 242, 0.85);
+        transition: color 0.4s ease, border-color 0.4s ease;
+      }
+
+      body:has(#theme-mist:checked) .dropdown .row {
+        color: rgba(28, 15, 23, 0.82);
+        border-top-color: rgba(28, 15, 23, 0.1);
+      }
+
+      .points .point {
+        margin-bottom: 28px;
+      }
+
+      .points .point:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ---------- CTA ---------- */
+      .cta {
+        text-align: center;
+      }
+
+      .fineprint {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--on-surface-soft);
+        margin: 22px auto 0;
+      }
+
+      /* ---------- Footer ---------- */
+      footer {
+        padding: 44px 32px 56px;
+        text-align: center;
+      }
+
+      footer p {
+        margin: 0 auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--on-surface-soft);
+      }
+
+      /* ---------- Responsive ---------- */
+      @media (max-width: 680px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+
+        .menubar-mock {
+          margin: 0 auto;
+        }
+
+        section {
+          padding: 64px 0;
+        }
+
+        .hero-top {
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .theme-switch {
+          position: static;
+        }
+      }
+
+      /* ---------- Reduced motion: bars start settled, nothing moves ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        .eq span {
+          animation: none;
+          height: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hero: the product story in one gesture -->
+    <header class="hero">
+      <input type="radio" name="theme" id="theme-ink" class="theme-radio" checked />
+      <input type="radio" name="theme" id="theme-mist" class="theme-radio" />
+      <input type="radio" name="theme" id="theme-plum" class="theme-radio" />
+      <div class="theme-switch" role="group" aria-label="Preview Hush&rsquo;s themes">
+        <label for="theme-ink">Ink</label>
+        <label for="theme-mist">Mist</label>
+        <label for="theme-plum">Plum</label>
+      </div>
+
+      <p class="kicker">Free menu bar app for Mac</p>
+      <h1 class="wordmark">Hush</h1>
+      <p class="tagline">A creative person&rsquo;s life saver.</p>
+
+      <div class="demo">
+        <div class="eq" aria-hidden="true">
+          <span style="--h: 22px; --d: 0s"></span>
+          <span style="--h: 40px; --d: 0.13s"></span>
+          <span style="--h: 16px; --d: 0.26s"></span>
+          <span style="--h: 52px; --d: 0.39s"></span>
+          <span style="--h: 30px; --d: 0.52s"></span>
+          <span style="--h: 60px; --d: 0.65s"></span>
+          <span style="--h: 24px; --d: 0.78s"></span>
+          <span style="--h: 44px; --d: 0.91s"></span>
+          <span style="--h: 18px; --d: 1.04s"></span>
+          <span style="--h: 56px; --d: 1.17s"></span>
+          <span style="--h: 28px; --d: 1.3s"></span>
+          <span style="--h: 38px; --d: 1.43s"></span>
+          <span style="--h: 20px; --d: 1.56s"></span>
+          <span style="--h: 48px; --d: 1.69s"></span>
+          <span style="--h: 32px; --d: 1.82s"></span>
+          <span style="--h: 58px; --d: 1.95s"></span>
+          <span style="--h: 14px; --d: 2.08s"></span>
+          <span style="--h: 42px; --d: 2.21s"></span>
+          <span style="--h: 26px; --d: 2.34s"></span>
+          <span style="--h: 50px; --d: 2.47s"></span>
+        </div>
+        <p class="demo-status">Something in the background is working overtime.</p>
+        <div class="demo-actions">
+          <a class="button" href="https://github.com/neoreddog/hush/releases/latest">Download for Mac</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- In the menu bar -->
+      <section class="product">
+        <div class="wrap">
+          <p class="eyebrow">In the menu bar</p>
+          <h2>The whole app is one small glyph.</h2>
+          <div class="two-col">
+            <div class="menubar-mock" aria-hidden="true">
+              <div class="menubar-strip">
+                <svg class="status-glyph" viewBox="0 0 26 16">
+                  <rect x="3" y="6.5" width="3" height="3" rx="1.5" fill="#8C7A85" />
+                  <rect x="8" y="6.5" width="3" height="3" rx="1.5" fill="#8C7A85" />
+                  <rect x="13" y="6.5" width="3" height="3" rx="1.5" fill="#8C7A85" />
+                  <rect x="18" y="6.5" width="3" height="3" rx="1.5" fill="#8C7A85" />
+                  <rect x="23" y="6.5" width="3" height="3" rx="1.5" fill="#8C7A85" />
+                </svg>
+                <span class="time">Tue 2:41 PM</span>
+              </div>
+              <div class="dropdown">
+                <div class="status">All quiet right now.</div>
+                <div class="sub">Hushing Adobe Crash Processor.</div>
+                <div class="row"><span>Allowance</span><span>20%</span></div>
+                <div class="row"><span>Theme</span><span>Hush on Ink</span></div>
+              </div>
+            </div>
+            <div class="points">
+              <div class="point">
+                <h3>It watches quietly</h3>
+                <p>Five small dots in the menu bar. When something starts running hot, they rise; when it settles, they rest.</p>
+              </div>
+              <div class="point">
+                <h3>It turns things down, not off</h3>
+                <p>The loud task keeps working — just at a volume your Mac can live with. Nothing is lost, nothing breaks.</p>
+              </div>
+              <div class="point">
+                <h3>There&rsquo;s nothing to learn</h3>
+                <p>No dashboards, no graphs, no decisions. One slider, if you ever want it. Most people never open it twice.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why -->
+      <section class="why">
+        <div class="wrap">
+          <p class="eyebrow">Where Hush came from</p>
+          <h2>It started with one loud laptop.</h2>
+          <div class="two-col">
+            <div>
+              <p class="lede">
+                My partner is a fantastic creative who uses her Mac for everything.
+                For months it was hot, loud, and slow, with nothing on screen to
+                explain why.
+              </p>
+              <p>
+                One evening I went digging and found the culprit: a background task called
+                Adobe Crash Processor, quietly helping itself to most of her machine.
+              </p>
+            </div>
+            <div>
+              <p>
+                So I built Hush and pointed it at the noise. The task keeps doing its job
+                — just at a volume her laptop can live with.
+              </p>
+              <p>
+                Her Mac went back to being the thing she bought: sleek, quiet, and capable.
+              </p>
+              <p class="story-close">
+                Hush is that fix, wrapped up for anyone who&rsquo;d rather make things than
+                manage a machine.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Download -->
+      <section class="cta" id="download">
+        <h2>Working quietly again.</h2>
+        <a class="button on-plum" href="https://github.com/neoreddog/hush/releases/latest">Download for Mac</a>
+        <p class="fineprint">Free &middot; macOS 13 or later</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Hush &mdash; first made for one loud laptop</p>
+    </footer>
+  </body>
+</html>
