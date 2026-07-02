@@ -1,6 +1,6 @@
 # Tabinator
 
-A lightweight macOS menu bar app that watches for **Adobe crash processor**
+A lightweight macOS menu bar app that watches for **Adobe Crash Processor**
 and caps its CPU usage.
 
 ## How it works
@@ -15,16 +15,17 @@ and caps its CPU usage.
 
 ## Menu bar controls
 
-- **CPU Limit** — pick the cap (5–75%, default 20%). Stored in
-  `UserDefaults`; change takes effect immediately.
-- **Launch at Login** — registers via `SMAppService` (requires running
-  from the built `.app` bundle, not the bare binary).
+- **Maximum CPU slider** — drag to set the cap (5–95% in 5% steps,
+  default 20%). Applies immediately and persists across restarts.
+- **Start Automatically at Login** — registers via `SMAppService`
+  (requires running from the built `.app` bundle, not the bare binary).
+- **Advanced ▸ Watched Process** — pick a different process to limit,
+  from a busiest-first list of running processes or by typing a name.
 
-The target process name and poll interval are also configurable via
-defaults:
+The menu bar gauge turns sea-green while a process is actively being
+limited. The poll interval is configurable via defaults:
 
 ```sh
-defaults write com.tabinator.app targetProcessName "Some Other Process"
 defaults write com.tabinator.app pollIntervalSeconds 10
 ```
 

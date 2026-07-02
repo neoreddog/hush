@@ -3,18 +3,16 @@ import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
+    private var sliderView: CPULimitSliderView!
     private let controller = ThrottleController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = NSImage(
-            systemSymbolName: "gauge.with.dots.needle.33percent",
-            accessibilityDescription: "Tabinator"
-        )
         statusItem.menu = buildMenu()
 
         controller.onStatusChange = { [weak self] in self?.refreshMenu() }
         controller.start()
+        refreshMenu()
 
         installSignalCleanup()
     }
@@ -28,38 +26,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
 
-        let status = NSMenuItem(title: statusText(), action: nil, keyEquivalent: "")
+        let status = NSMenuItem(title: "", action: nil, keyEquivalent: "")
         status.isEnabled = false
         status.tag = MenuTag.status
         menu.addItem(status)
         menu.addItem(.separator())
 
-        let limitItem = NSMenuItem(title: "CPU Limit", action: nil, keyEquivalent: "")
-        let limitMenu = NSMenu()
-        for percent in [5, 10, 20, 30, 40, 50, 75] {
-            let item = NSMenuItem(
-                title: "\(percent)%",
-                action: #selector(setLimit(_:)),
-                keyEquivalent: ""
-            )
-            item.target = self
-            item.tag = percent
-            item.state = percent == Settings.cpuLimitPercent ? .on : .off
-            limitMenu.addItem(item)
+        sliderView = CPULimitSliderView { [weak self] percent in
+            Settings.cpuLimitPercent = percent
+            self?.controller.limitChanged()
+            self?.refreshMenu()
         }
-        limitItem.submenu = limitMenu
-        limitItem.tag = MenuTag.limit
-        menu.addItem(limitItem)
-
-        let targetItem = NSMenuItem(title: "Target Process", action: nil, keyEquivalent: "")
-        let targetMenu = NSMenu()
-        targetMenu.delegate = self
-        targetItem.submenu = targetMenu
-        targetItem.tag = MenuTag.target
-        menu.addItem(targetItem)
+        let sliderItem = NSMenuItem()
+        sliderItem.view = sliderView
+        menu.addItem(sliderItem)
+        menu.addItem(.separator())
 
         let login = NSMenuItem(
-            title: "Launch at Login",
+            title: "Start Automatically at Login",
             action: #selector(toggleLaunchAtLogin(_:)),
             keyEquivalent: ""
         )
@@ -67,6 +51,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         login.tag = MenuTag.login
         menu.addItem(login)
+
+        // Advanced ▸ Watched Process ▸ (running-process picker)
+        let advancedItem = NSMenuItem(title: "Advanced", action: nil, keyEquivalent: "")
+        let advancedMenu = NSMenu()
+        let targetItem = NSMenuItem(title: "Watched Process", action: nil, keyEquivalent: "")
+        let targetMenu = NSMenu()
+        targetMenu.delegate = self
+        targetItem.submenu = targetMenu
+        advancedMenu.addItem(targetItem)
+        advancedItem.submenu = advancedMenu
+        menu.addItem(advancedItem)
 
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit Tabinator", action: #selector(quit), keyEquivalent: "q")
@@ -78,43 +73,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private enum MenuTag {
         static let status = 1
-        static let limit = 2
         static let login = 3
-        static let target = 4
     }
 
     private func statusText() -> String {
-        let pids = controller.throttlers.keys.sorted()
-        if pids.isEmpty {
-            return "Watching for \u{201C}\(Settings.targetProcessName)\u{201D}"
+        let name = Settings.targetProcessName
+        if controller.throttlers.isEmpty {
+            return "\(name) is not running"
         }
-        let list = pids.map(String.init).joined(separator: ", ")
-        return "Throttling PID \(list) to \(Settings.cpuLimitPercent)%"
+        return "Limiting \(name) to \(Settings.cpuLimitPercent)% CPU"
     }
 
     private func refreshMenu() {
-        guard let menu = statusItem.menu else { return }
-        menu.item(withTag: MenuTag.status)?.title = statusText()
-        if let limitMenu = menu.item(withTag: MenuTag.limit)?.submenu {
-            for item in limitMenu.items {
-                item.state = item.tag == Settings.cpuLimitPercent ? .on : .off
-            }
+        statusItem.menu?.item(withTag: MenuTag.status)?.title = statusText()
+        sliderView.refresh()
+        updateIcon()
+    }
+
+    /// Template (auto light/dark) gauge when idle; sea-green when limiting.
+    private func updateIcon() {
+        let active = !controller.throttlers.isEmpty
+        let symbol = active ? "gauge.with.dots.needle.33percent" : "gauge.with.dots.needle.67percent"
+        var image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Tabinator")
+        if active {
+            image = image?.withSymbolConfiguration(.init(paletteColors: [tabinatorAccent]))
+            image?.isTemplate = false
+        } else {
+            image?.isTemplate = true
         }
-        statusItem.button?.image = NSImage(
-            systemSymbolName: controller.throttlers.isEmpty
-                ? "gauge.with.dots.needle.33percent"
-                : "gauge.with.dots.needle.67percent",
-            accessibilityDescription: "Tabinator"
-        )
+        statusItem.button?.image = image
+        statusItem.button?.toolTip = statusText()
     }
 
     // MARK: - Actions
-
-    @objc private func setLimit(_ sender: NSMenuItem) {
-        Settings.cpuLimitPercent = sender.tag
-        controller.limitChanged()
-        refreshMenu()
-    }
 
     @objc private func setTarget(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
@@ -123,7 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func setCustomTarget(_ sender: NSMenuItem) {
         let alert = NSAlert()
-        alert.messageText = "Target Process"
+        alert.messageText = "Watched Process"
         alert.informativeText = "Enter the exact process name to watch for (case-insensitive)."
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.stringValue = Settings.targetProcessName
@@ -155,8 +146,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Could not update Launch at Login"
-            alert.informativeText = "\(error.localizedDescription)\n\nNote: this only works when running from the built Tabinator.app bundle."
+            alert.messageText = "Could not update Start at Login"
+            alert.informativeText = "\(error.localizedDescription)\n\nNote: this only works when Tabinator is run from the Applications folder."
             alert.runModal()
         }
         sender.state = service.status == .enabled ? .on : .off
@@ -186,10 +177,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var signalSources: [DispatchSourceSignal] = []
 }
 
-// MARK: - Target Process submenu
+// MARK: - Watched Process submenu
 
 extension AppDelegate: NSMenuDelegate {
-    /// Rebuilds the Target Process submenu each time it opens, listing
+    /// Rebuilds the Watched Process submenu each time it opens, listing
     /// running processes busiest-first.
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()

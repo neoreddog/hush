@@ -18,7 +18,7 @@ enum Settings {
     }
 
     static var targetProcessName: String {
-        get { defaults.string(forKey: Key.processName) ?? "Adobe crash processor" }
+        get { defaults.string(forKey: Key.processName) ?? "Adobe Crash Processor" }
         set { defaults.set(newValue, forKey: Key.processName) }
     }
 
