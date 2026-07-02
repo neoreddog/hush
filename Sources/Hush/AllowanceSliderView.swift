@@ -9,7 +9,7 @@ final class AllowanceSliderView: NSView {
 
     init(onChange: @escaping (Int) -> Void) {
         self.onChange = onChange
-        super.init(frame: NSRect(x: 0, y: 0, width: 260, height: 56))
+        super.init(frame: NSRect(x: 0, y: 0, width: 260, height: 46))
 
         label.font = .menuFont(ofSize: NSFont.systemFontSize(for: .small))
         label.textColor = .secondaryLabelColor
@@ -18,6 +18,7 @@ final class AllowanceSliderView: NSView {
         slider.maxValue = 95
         slider.integerValue = Settings.cpuLimitPercent
         slider.isContinuous = true
+        slider.trackFillColor = Settings.theme.headlineColor
         slider.target = self
         slider.action = #selector(sliderMoved)
         toolTip = "How much of your Mac the background task is allowed to use."
@@ -44,12 +45,17 @@ final class AllowanceSliderView: NSView {
         updateLabel()
     }
 
+    /// See `MenuHeaderView.applyTheme()` — an open NSMenu freezes its own
+    /// appearance mid-tracking, so the slider's tint is set directly per
+    /// theme rather than left to resolve against the (stuck) appearance.
+    func applyTheme() {
+        slider.trackFillColor = Settings.theme.headlineColor
+        slider.needsDisplay = true
+    }
+
     @objc private func sliderMoved() {
-        // Snap to 5% steps so the value reads cleanly.
-        let snapped = (slider.integerValue + 2) / 5 * 5
-        slider.integerValue = snapped
         updateLabel()
-        onChange(snapped)
+        onChange(slider.integerValue)
     }
 
     private func updateLabel() {

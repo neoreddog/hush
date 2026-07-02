@@ -7,6 +7,18 @@ enum Settings {
         static let cpuLimit = "cpuLimitPercent"
         static let processName = "targetProcessName"
         static let pollInterval = "pollIntervalSeconds"
+        static let theme = "theme"
+        static let menuBarAnimation = "menuBarAnimation"
+    }
+
+    static var menuBarAnimationEnabled: Bool {
+        get { defaults.object(forKey: Key.menuBarAnimation) == nil ? true : defaults.bool(forKey: Key.menuBarAnimation) }
+        set { defaults.set(newValue, forKey: Key.menuBarAnimation) }
+    }
+
+    static var theme: Brand.Theme {
+        get { defaults.string(forKey: Key.theme).flatMap(Brand.Theme.init) ?? .ink }
+        set { defaults.set(newValue.rawValue, forKey: Key.theme) }
     }
 
     static var cpuLimitPercent: Int {

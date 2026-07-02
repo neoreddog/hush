@@ -3,11 +3,16 @@ import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
+    private var headerView: MenuHeaderView!
     private var sliderView: AllowanceSliderView!
+    private var themeRowViews: [ThemeMenuRowView] = []
+    private var themedTitleItems: [NSMenuItem] = []
     private let controller = ThrottleController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // Fixed length so the menu bar doesn't reflow when the glyph
+        // swaps between the static image and the live bars.
+        statusItem = NSStatusBar.system.statusItem(withLength: 26)
         statusItem.menu = buildMenu()
 
         controller.onStatusChange = { [weak self] in self?.refreshMenu() }
@@ -26,15 +31,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
 
-        let status = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-        status.isEnabled = false
-        status.tag = MenuTag.status
-        menu.addItem(status)
-
-        let sub = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-        sub.isEnabled = false
-        sub.tag = MenuTag.statusSub
-        menu.addItem(sub)
+        headerView = MenuHeaderView()
+        let headerItem = NSMenuItem()
+        headerItem.view = headerView
+        menu.addItem(headerItem)
         menu.addItem(.separator())
 
         sliderView = AllowanceSliderView { [weak self] percent in
@@ -47,6 +47,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(sliderItem)
         menu.addItem(.separator())
 
+        // Theme ▸ Hush on Ink / Mist / Plum, as a submenu. Each row is a
+        // custom view rather than a plain action item, so clicking one
+        // applies the theme live and leaves the submenu open — you can
+        // flip through Ink/Mist/Plum without reopening the menu each time.
+        let themeItem = NSMenuItem(title: "Theme", action: nil, keyEquivalent: "")
+        let themeMenu = NSMenu()
+        themeRowViews = []
+        for theme in Brand.Theme.allCases {
+            let row = ThemeMenuRowView(theme: theme) { [weak self] theme in
+                guard let self else { return }
+                Settings.theme = theme
+                // Sets the appearance for the *next* time the menu opens —
+                // an already-open NSMenu freezes its appearance for the
+                // duration of tracking, so this alone won't repaint
+                // anything live. The wash, headline, and slider tint are
+                // applied directly below instead, since we own those colors.
+                self.statusItem.menu?.appearance = theme.appearance
+                self.headerView.applyTheme()
+                self.sliderView.applyTheme()
+                for row in self.themeRowViews { row.refresh() }
+                self.restyleThemedTitles()
+            }
+            themeRowViews.append(row)
+            let item = NSMenuItem()
+            item.view = row
+            themeMenu.addItem(item)
+        }
+        themeItem.submenu = themeMenu
+        menu.addItem(themeItem)
+
         // Advanced ▸ Watched Process / Start at Login
         let advancedItem = NSMenuItem(title: "Advanced", action: nil, keyEquivalent: "")
         let advancedMenu = NSMenu()
@@ -56,6 +86,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         targetMenu.delegate = self
         targetItem.submenu = targetMenu
         advancedMenu.addItem(targetItem)
+
+        let animate = NSMenuItem(
+            title: "Animate While Hushing",
+            action: #selector(toggleMenuBarAnimation(_:)),
+            keyEquivalent: ""
+        )
+        animate.target = self
+        animate.state = Settings.menuBarAnimationEnabled ? .on : .off
+        advancedMenu.addItem(animate)
 
         let login = NSMenuItem(
             title: "Start Automatically at Login",
@@ -73,45 +112,74 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         quit.target = self
         menu.addItem(quit)
 
+        themedTitleItems = [themeItem, advancedItem, quit]
+        restyleThemedTitles()
+
+        menu.appearance = Settings.theme.appearance
         return menu
     }
 
-    private enum MenuTag {
-        static let status = 1
-        static let statusSub = 2
+    /// Native NSMenuItems draw their title in whatever color the system
+    /// appearance dictates, and — like the header/slider colors — that's
+    /// frozen for as long as the menu is tracking. Giving each an
+    /// attributedTitle with an explicit color lets them repaint immediately
+    /// when a theme is picked from the still-open submenu.
+    private func restyleThemedTitles() {
+        let color = Settings.theme.itemTextColor
+        for item in themedTitleItems {
+            item.attributedTitle = NSAttributedString(
+                string: item.title,
+                attributes: [.font: NSFont.menuFont(ofSize: NSFont.systemFontSize), .foregroundColor: color]
+            )
+        }
     }
 
     /// Status copy speaks in outcomes, never mechanisms — no CPU, no
     /// processes, nothing alarmed.
     private var statusCopy: (headline: String, sub: String) {
+        let target = Settings.targetProcessName
         if controller.throttlers.isEmpty {
-            return ("All quiet.", "Nothing running hot right now.")
+            return ("All quiet right now.", "Hushing \(target).")
         }
-        return ("Working on it.", "Something was working overtime. Hush is keeping it settled.")
+        return ("Cooling things down.", "Hushing \(target).")
     }
 
     private func refreshMenu() {
         guard let menu = statusItem.menu else { return }
         let copy = statusCopy
 
-        menu.item(withTag: MenuTag.status)?.attributedTitle = NSAttributedString(
-            string: copy.headline,
-            attributes: [.font: Brand.display(ofSize: 19), .foregroundColor: NSColor.labelColor]
-        )
-        menu.item(withTag: MenuTag.statusSub)?.attributedTitle = NSAttributedString(
-            string: copy.sub,
-            attributes: [
-                .font: NSFont.menuFont(ofSize: NSFont.systemFontSize(for: .small)),
-                .foregroundColor: NSColor.secondaryLabelColor,
-            ]
-        )
+        headerView.update(headline: copy.headline, sub: copy.sub)
 
         sliderView.refresh()
+        for row in themeRowViews { row.refresh() }
 
-        let active = !controller.throttlers.isEmpty
-        statusItem.button?.image = active ? Brand.menuBarActive : Brand.menuBarIdle
         statusItem.button?.toolTip = "Hush — \(copy.headline)"
+        setIconAnimating(!controller.throttlers.isEmpty)
     }
+
+    /// While actively hushing, the glyph becomes the live settling-bars
+    /// animation from the brand guidelines; idle shows the static template
+    /// dots. Reduced-motion users get the static active glyph instead.
+    private func setIconAnimating(_ active: Bool) {
+        guard let button = statusItem.button else { return }
+
+        if active,
+           Settings.menuBarAnimationEnabled,
+           !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            guard barsView == nil else { return }
+            button.image = nil
+            let bars = SettlingBarsView(frame: button.bounds)
+            bars.autoresizingMask = [.width, .height]
+            button.addSubview(bars)
+            barsView = bars
+        } else {
+            barsView?.removeFromSuperview()
+            barsView = nil
+            button.image = active ? Brand.menuBarActive : Brand.menuBarIdle
+        }
+    }
+
+    private var barsView: SettlingBarsView?
 
     // MARK: - Actions
 
@@ -141,6 +209,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard name.caseInsensitiveCompare(Settings.targetProcessName) != .orderedSame else { return }
         Settings.targetProcessName = name
         controller.retarget()
+        refreshMenu()
+    }
+
+    @objc private func toggleMenuBarAnimation(_ sender: NSMenuItem) {
+        Settings.menuBarAnimationEnabled.toggle()
+        sender.state = Settings.menuBarAnimationEnabled ? .on : .off
         refreshMenu()
     }
 
